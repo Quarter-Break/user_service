@@ -43,7 +43,7 @@ namespace UserService
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                       builder =>
                       {
-                          builder.WithOrigins("*")
+                          builder.WithOrigins("*") // ADD API GATEWAY HERE
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowAnyOrigin();
@@ -74,12 +74,6 @@ namespace UserService
             app.UseRouting();
 
             app.UseAuthorization();
-
-            // global cors policy
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
 
             // custom jwt auth middleware
             app.UseMiddleware<JwtMiddleware>();
