@@ -16,6 +16,6 @@ namespace UserService.Database.Contexts
             modelBuilder.ApplyConfiguration(new UserConfiguration());
         }
 
-        public DbSet<User> Users{ get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

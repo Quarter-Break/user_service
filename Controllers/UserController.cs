@@ -21,7 +21,7 @@ namespace UserService.Controllers
     {
         private readonly UserContext _context;
         private readonly RegisterDtoConverter _converter;
-        private readonly AuthenticationDtoConverter authenticationRequestConverter;
+        private readonly AuthenticationDtoConverter authConverter;
         private readonly IAuthenticationService _authService;
 
         public UserController(UserContext context, IAuthenticationService authService)
@@ -29,7 +29,7 @@ namespace UserService.Controllers
             _context = context;
             _authService = authService;
             _converter = new();
-            authenticationRequestConverter = new();
+            authConverter = new();
         }
 
         [HttpPost]
@@ -43,11 +43,11 @@ namespace UserService.Controllers
             }
 
             User registration = _converter.DtoToModel(request);
+            AuthenticationRequest authenticationRequest = authConverter.ModelToDto(request.Email, request.Password);
+            await _context.AddAsync(registration);
+            await _context.SaveChangesAsync();
 
-            _context.Add(registration);
-            _context.SaveChanges();
-
-            return await _authService.Authenticate(authenticationRequestConverter.ModelToDto(registration));
+            return await _authService.Authenticate(authenticationRequest);
         }
 
         [HttpGet]

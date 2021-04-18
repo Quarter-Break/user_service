@@ -1,12 +1,13 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
-ENV ASPNETCORE_ENVIRONMENT="Production"
-ENV ENVIRONMENT="Production"
 
 FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
 EXPOSE 6001
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+ENV ASPNETCORE_ENVIRONMENT="Production"
+ENV ENVIRONMENT="Production"
+
 WORKDIR /src
 COPY ["UserService.csproj", ""]
 RUN dotnet restore "./UserService.csproj"

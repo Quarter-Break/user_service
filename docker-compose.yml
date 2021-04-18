@@ -1,7 +1,7 @@
 ﻿version: '3.9'
 
 services:
-    trackservice:
+    userservice:
         build:
             context: .
             dockerfile: Dockerfile.local
