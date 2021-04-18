@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -7,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 using UserService.Database.Contexts;
 using UserService.Helpers.Security.Models;
 using UserService.Models;
@@ -27,10 +29,10 @@ namespace UserService.Helpers.Security
             passwordHasher = new();
         }
 
-        public IActionResult Authenticate(AuthenticationRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> Authenticate(AuthenticationRequest request)
         {
             // Check if user exists;
-            User user = _context.Users.FirstOrDefault(u => u.Email == request.Email);
+            User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
             // Return null if user not found
             if (user == null)
@@ -44,7 +46,8 @@ namespace UserService.Helpers.Security
             if (result.Equals(PasswordVerificationResult.Success))
             {
                 // authentication successful so generate jwt token
-                return GenerateJwtToken(user);
+                string token = GenerateJwtToken(user);
+                return new AuthenticationResponse(user, token);
             }
             else
             {
@@ -59,7 +62,7 @@ namespace UserService.Helpers.Security
             return _context.Users.FirstOrDefault(u => u.Id == id);
         }
 
-        private IActionResult GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user)
         {
             // generate token that is valid for 7 days
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -72,8 +75,7 @@ namespace UserService.Helpers.Security
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            // Return actionresult with token
-            return Ok(tokenHandler.WriteToken(token));
+            return tokenHandler.WriteToken(token);
         }
     }
 }

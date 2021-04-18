@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System.Threading.Tasks;
 using UserService.Database.Contexts;
 using UserService.Helpers.Security;
 using UserService.Helpers.Security.Models;
@@ -20,9 +21,9 @@ namespace UserService.Controllers
 
         [HttpPost]
         [Route("login")]
-        public IActionResult Login(AuthenticationRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> Login(AuthenticationRequest request)
         {
-            return _authService.Authenticate(request);
+            return await _authService.Authenticate(request);
         }
     }
 }

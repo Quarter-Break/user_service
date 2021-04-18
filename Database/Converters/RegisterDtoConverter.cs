@@ -7,23 +7,23 @@ namespace UserService.Converters
 {
     public class RegisterDtoConverter
     {
-        public User DtoToModel(RegisterDto dto)
+        public User DtoToModel(RegisterRequest dto)
         {
             PasswordHasher<AuthenticationRequest> passwordHasher = new();
-            AuthenticationRequestConverter authenticationRequestConverter = new();
+            AuthenticationDtoConverter authenticationRequestConverter = new();
 
             return new User
             {
                 Username = dto.Username,
                 Email = dto.Email,
                 // Hash password before saving to db.
-                Password = passwordHasher.HashPassword(authenticationRequestConverter.DtoToRequest(dto.Email, dto.Password), dto.Password)
+                Password = passwordHasher.HashPassword(authenticationRequestConverter.ModelToDto(dto.Email, dto.Password), dto.Password)
             };
         }
 
-        public UserDto ModelToDto(User registration)
+        public UserResponse ModelToDto(User registration)
         {
-            return new UserDto
+            return new UserResponse
             {
                 Id = registration.Id,
                 Username = registration.Username,
