@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UserService.Converters;
 using UserService.Database.Contexts;
 using UserService.Database.Models;
@@ -19,7 +21,7 @@ namespace UserService.Controllers
     {
         private readonly UserContext _context;
         private readonly RegisterDtoConverter _converter;
-        private readonly AuthenticationRequestConverter authenticationRequestConverter;
+        private readonly AuthenticationDtoConverter authConverter;
         private readonly IAuthenticationService _authService;
 
         public UserController(UserContext context, IAuthenticationService authService)
@@ -27,31 +29,33 @@ namespace UserService.Controllers
             _context = context;
             _authService = authService;
             _converter = new();
-            authenticationRequestConverter = new();
+            authConverter = new();
         }
 
         [HttpPost]
-        public IActionResult Register(RegisterDto dto)
+        public async Task<ActionResult<AuthenticationResponse>> Register(RegisterRequest request)
         {
-            User registration = _converter.DtoToModel(dto);
+            User user = await FindByEmail(request.Email);
 
-            if (ModelState.IsValid)
+            if (user != null)
             {
-                _context.Add(registration);
-                _context.SaveChanges();
-
-                return _authService.Authenticate(authenticationRequestConverter.DtoToRequest(dto.Email, dto.Password));
+                return BadRequest("This email is already in use.");
             }
 
-            return BadRequest();
+            User registration = _converter.DtoToModel(request);
+            AuthenticationRequest authenticationRequest = authConverter.ModelToDto(request.Email, request.Password);
+            await _context.AddAsync(registration);
+            await _context.SaveChangesAsync();
+
+            return await _authService.Authenticate(authenticationRequest);
         }
 
         [HttpGet]
         [Authorize]
-        public List<UserDto> GetAllUsers()
+        public List<UserResponse> GetAllUsers()
         {
             List<User> registrations = _context.Users.ToList();
-            List<UserDto> users = new();
+            List<UserResponse> users = new();
 
             foreach (User registration in registrations)
             {
@@ -64,56 +68,57 @@ namespace UserService.Controllers
         [HttpGet]
         [Authorize]
         [Route("{email}")]
-        public ActionResult<UserDto> GetUserByEmail(string email)
+        public async Task<ActionResult<UserResponse>> GetUserByEmail(string email)
         {
-            User user = FindByEmail(email);
+            User user = await FindByEmail(email);
 
-            if (user != null)
+            if (user == null)
             {
-                return Ok(_converter.ModelToDto(user));
+                return NotFound($"User with email {email} does not exist.");
             }
-            else
-            {
-                return NotFound();
-            }
+
+            return Ok(_converter.ModelToDto(user));
         }
 
         [HttpPut]
         [Authorize]
-        public IActionResult UpdateUserByEmail(string email, UpdateDto dto)
+        public async Task<ActionResult> UpdateUserByEmail(string email, UpdateRequest dto)
         {
-            User user = FindByEmail(email);
+            User user = await FindByEmail(email);
             UpdateDtoConverter updateConverter = new();
 
-            if (user != null)
+            if (user == null)
             {
-                User updatedUser = updateConverter.DtoToModel(dto, user);
-                _context.Entry(user).CurrentValues.SetValues(updatedUser);
-                _context.SaveChanges();
-                return Ok();
+                return NotFound($"User with email {email} does not exist.");
             }
-            else
-            {
-                return NotFound();
-            }
+
+            User updatedUser = updateConverter.DtoToModel(dto, user);
+            _context.Entry(user).CurrentValues.SetValues(updatedUser);
+            _context.SaveChanges();
+
+            return Ok(_converter.ModelToDto(updatedUser));
         }
 
         [HttpDelete]
         [Authorize]
-        public IActionResult DeleteUserById(Guid id)
+        public async Task<ActionResult> DeleteUserById(Guid id)
         {
-            User user = new() { Id = id };
+            User user = await _context.Users.FirstOrDefaultAsync(e => e.Id == id);
 
-            _context.Users.Attach(user);
+            if (user == null)
+            {
+                return NotFound($"User with id {id} does not exist.");
+            }
+
             _context.Remove(user);
             _context.SaveChanges();
 
             return Ok();
         }
 
-        private User FindByEmail(string email)
+        private async Task<User> FindByEmail(string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
     }
 }

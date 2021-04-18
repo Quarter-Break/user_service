@@ -2,9 +2,9 @@
 
 namespace UserService.Helpers.Security.Models
 {
-    public class AuthenticationRequestConverter
+    public class AuthenticationDtoConverter
     {
-        public AuthenticationRequest UserToRequest(User user)
+        public AuthenticationRequest ModelToDto(User user)
         {
             return new AuthenticationRequest
             {
@@ -13,7 +13,7 @@ namespace UserService.Helpers.Security.Models
             };
         }
 
-        public AuthenticationRequest DtoToRequest(string email, string password)
+        public AuthenticationRequest ModelToDto(string email, string password)
         {
             return new AuthenticationRequest
             {

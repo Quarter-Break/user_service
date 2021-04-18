@@ -8,10 +8,10 @@ namespace UserService.Helpers.Converters
 {
     public class UpdateDtoConverter
     {
-        public User DtoToModel(UpdateDto dto, User user)
+        public User DtoToModel(UpdateRequest dto, User user)
         {
             PasswordHasher<AuthenticationRequest> passwordHasher = new();
-            AuthenticationRequestConverter authenticationRequestConverter = new();
+            AuthenticationDtoConverter authenticationRequestConverter = new();
             User updatedUser = user;
 
             if (dto.Username != null)
@@ -20,7 +20,7 @@ namespace UserService.Helpers.Converters
             }
             if (dto.Password != null)
             {
-                updatedUser.Password = passwordHasher.HashPassword(authenticationRequestConverter.UserToRequest(user), dto.Password);
+                updatedUser.Password = passwordHasher.HashPassword(authenticationRequestConverter.ModelToDto(user), dto.Password);
             }
             if (dto.AvatarPath != null)
             {

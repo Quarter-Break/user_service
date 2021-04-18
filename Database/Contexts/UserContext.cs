@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using UserService.Database.Configurations;
 using UserService.Models;
 
 namespace UserService.Database.Contexts
@@ -10,6 +11,11 @@ namespace UserService.Database.Contexts
         {
         }
 
-        public DbSet<User> Users{ get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+        }
+
+        public DbSet<User> Users { get; set; }
     }
 }

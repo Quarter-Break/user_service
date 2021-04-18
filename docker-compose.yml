@@ -1,22 +1,32 @@
-﻿version: "3.9"
+﻿version: '3.9'
 
 services:
-    pkg:
-        build: .
+    userservice:
+        build:
+            context: .
+            dockerfile: Dockerfile.local
+        container_name: userservice
         ports:
-            - "6001:6001"
+            - "0.0.0.0:6001:6001"
         depends_on:
             - db
+        networks:
+            - qbreak-network
     db:
-        image: "mysql:latest"
+        image: "mcr.microsoft.com/mssql/server"
         volumes:
-          - sqlvolume:/var/opt/mysql
-
+          - user_volume:/var/opt/mssql
         environment:
-            MYSQL_ROOT_PASSWORD: "9XXf@2jnSOCA"
-            MYSQL_DATABASE: "qb_user_db"
+            SA_PASSWORD: "HW5etW#4iyWCNu"
+            ACCEPT_EULA: "Y"
         ports:
-            - "3306:3306"
+            - "0.0.0.0:1532:1433"
+        networks:
+            - qbreak-network
 
 volumes:
-  sqlvolume:
+  user_volume:
+
+networks:
+    qbreak-network:
+        external: true
