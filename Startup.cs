@@ -1,15 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using UserService.Database.Contexts;
 using UserService.Helpers.Security;
-using UserService.Helpers.Security.Models;
 
 namespace UserService
 {
@@ -32,7 +29,7 @@ namespace UserService
             // Inject database context
             var connection = Configuration.GetConnectionString("UserServiceContext");
             services.AddDbContext<UserContext>(
-                options => options.UseMySQL(connection));
+                options => options.UseSqlServer(connection));
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserService", Version = "v1" });
