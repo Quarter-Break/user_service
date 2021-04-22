@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using UserService.Database.Contexts;
 using UserService.Helpers.Security;
 
@@ -27,13 +26,9 @@ namespace UserService
             // Inject controllers.
             services.AddControllers();
             // Inject database context
-            var connection = Configuration.GetConnectionString("UserServiceContext");
+            var connection = Configuration.GetValue<string>("ConnectionString");
             services.AddDbContext<UserContext>(
                 options => options.UseSqlServer(connection));
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserService", Version = "v1" });
-            });
 
             services.AddCors(options =>
             {
@@ -52,6 +47,8 @@ namespace UserService
 
             // Configure DI for application services
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -62,8 +59,6 @@ namespace UserService
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserService v1"));
             }
 
             app.UseCors(MyAllowSpecificOrigins);
@@ -80,6 +75,21 @@ namespace UserService
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger(c =>
+            {
+                c.SerializeAsV2 = true;
+            });
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "UserService");
+                // Serve the swagger UI at the app's root
+                c.RoutePrefix = string.Empty;
             });
         }
     }
