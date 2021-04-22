@@ -27,7 +27,6 @@ jobs:
         with:
             files: 'appsettings.json'
         env:
-            Secret: ${{ secrets.SECRET }}
             UserServiceContext: ${{ secrets.DATABASE_CONNECTION }}
             
           
