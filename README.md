@@ -32,3 +32,5 @@ docker network create qbreak-network
 Repository pattern in .NET: https://www.programmingwithwolfgang.com/repository-pattern-net-core/
 
 Testing with Moq: https://softchris.github.io/pages/dotnet-moq.html#instruct-our-mock
+
+Authentication/authorization: https://github.com/cornflourblue/aspnet-core-3-jwt-authentication-api/
