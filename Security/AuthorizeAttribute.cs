@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using UserService.Models;
 
-namespace UserService.Helpers.Security
+namespace UserService.Security
 {
     // Source: https://github.com/cornflourblue/aspnet-core-3-jwt-authentication-api/
 

@@ -10,10 +10,10 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using UserService.Database.Contexts;
-using UserService.Helpers.Security.Models;
+using UserService.Database.Models.Dto;
 using UserService.Models;
 
-namespace UserService.Helpers.Security
+namespace UserService.Security
 {
     // Source: https://github.com/cornflourblue/aspnet-core-3-jwt-authentication-api/
     public class AuthenticationService : Controller, IAuthenticationService
@@ -29,7 +29,7 @@ namespace UserService.Helpers.Security
             passwordHasher = new();
         }
 
-        public async Task<ActionResult<AuthenticationResponse>> Authenticate(AuthenticationRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> AuthenticateAsync(AuthenticationRequest request)
         {
             // Check if user exists;
             User user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);

@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using UserService.Helpers.Security.Models;
+using UserService.Database.Models.Dto;
 using UserService.Models;
 
-namespace UserService.Helpers.Security
+namespace UserService.Security
 {
     // Source: https://github.com/cornflourblue/aspnet-core-3-jwt-authentication-api/
     public interface IAuthenticationService
     {
-        Task<ActionResult<AuthenticationResponse>> Authenticate(AuthenticationRequest request);
+        Task<ActionResult<AuthenticationResponse>> AuthenticateAsync(AuthenticationRequest request);
         User GetById(Guid id);
     }
 }

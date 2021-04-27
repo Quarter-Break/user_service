@@ -5,7 +5,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using UserService.Database.Contexts;
-using UserService.Helpers.Security;
+using UserService.Database.Converters;
+using UserService.Database.Models.Dto;
+using UserService.Models;
+using UserService.Repositories;
+using UserService.Security;
+using UserService.Services;
 
 namespace UserService
 {
@@ -25,7 +30,8 @@ namespace UserService
         {
             // Inject controllers.
             services.AddControllers();
-            // Inject database context
+
+            // Inject database context.
             var connection = Configuration.GetValue<string>("ConnectionString");
             services.AddDbContext<UserContext>(
                 options => options.UseSqlServer(connection));
@@ -42,19 +48,34 @@ namespace UserService
                       });
             });
 
-            // Configure strongly typed settings object
+            // Json settings.
+            services.AddMvc().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            // Configure strongly typed settings object.
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
-            // Configure DI for application services
+            // Configure DI for application services.
             services.AddScoped<IAuthenticationService, AuthenticationService>();
 
+            // Add swagger.
             services.AddSwaggerGen();
+
+            // Inject converters.
+            services.AddScoped<IDtoConverter<User, UserRequest, UserResponse>, UserDtoConverter>();
+
+            // Inject repositories.
+            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            services.AddTransient<IUserRepository, UserRepository>();
+
+            // Inject services.
+            services.AddTransient<IUserService, UserModelService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, UserContext context)
         {
-            //context.Database.Migrate();
+            context.Database.Migrate();
 
             if (env.IsDevelopment())
             {

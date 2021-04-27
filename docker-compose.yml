@@ -14,8 +14,9 @@ services:
             - qbreak-network
     db:
         image: "mcr.microsoft.com/mssql/server"
+        container_name: userdb
         volumes:
-          - user_volume:/var/opt/mssql
+          - user_volume:/var/opt/mssql/
         environment:
             SA_PASSWORD: "HW5etW#4iyWCNu"
             ACCEPT_EULA: "Y"

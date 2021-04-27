@@ -1,17 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using UserService.Converters;
-using UserService.Database.Contexts;
-using UserService.Database.Models;
+using UserService.Database.Converters;
 using UserService.Database.Models.Dto;
-using UserService.Helpers.Converters;
-using UserService.Helpers.Security;
-using UserService.Helpers.Security.Models;
 using UserService.Models;
+using UserService.Security;
+using UserService.Services;
 
 namespace UserService.Controllers
 {
@@ -19,106 +13,58 @@ namespace UserService.Controllers
     [Route("api/user")]
     public class UserController : Controller
     {
-        private readonly UserContext _context;
-        private readonly RegisterDtoConverter _converter;
-        private readonly AuthenticationDtoConverter authConverter;
-        private readonly IAuthenticationService _authService;
+        private readonly IUserService _service;
+        private readonly IAuthenticationService _authenticationService;
+        private readonly IDtoConverter<User, UserRequest, UserResponse> _converter;
 
-        public UserController(UserContext context, IAuthenticationService authService)
+        public UserController(IUserService service,
+            IAuthenticationService authenticationService,
+           IDtoConverter<User, UserRequest, UserResponse> converter)
         {
-            _context = context;
-            _authService = authService;
-            _converter = new();
-            authConverter = new();
+            _service = service;
+            _authenticationService = authenticationService;
+            _converter = converter;
         }
 
         [HttpPost]
-        public async Task<ActionResult<AuthenticationResponse>> Register(RegisterRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> AddAsync(UserRequest request)
         {
-            User user = await FindByEmail(request.Email);
+            await _service.AddUserAsync(request);
 
-            if (user != null)
-            {
-                return BadRequest("This email is already in use.");
-            }
-
-            User registration = _converter.DtoToModel(request);
-            AuthenticationRequest authenticationRequest = authConverter.ModelToDto(request.Email, request.Password);
-            await _context.AddAsync(registration);
-            await _context.SaveChangesAsync();
-
-            return await _authService.Authenticate(authenticationRequest);
+            return Created("Created", await _authenticationService.AuthenticateAsync(new AuthenticationRequest(request)));
         }
 
-        [HttpGet]
-        [Authorize]
-        public List<UserResponse> GetAllUsers()
+        [HttpPost]
+        [Route("login")]
+        public async Task<ActionResult<AuthenticationResponse>> Login(AuthenticationRequest request)
         {
-            List<User> registrations = _context.Users.ToList();
-            List<UserResponse> users = new();
-
-            foreach (User registration in registrations)
-            {
-                users.Add(_converter.ModelToDto(registration));
-            }
-
-            return users;
+            return await _authenticationService.AuthenticateAsync(request);
         }
 
         [HttpGet]
         [Authorize]
         [Route("{email}")]
-        public async Task<ActionResult<UserResponse>> GetUserByEmail(string email)
+        public async Task<ActionResult<UserResponse>> GetUserByEmailAsync(string email)
         {
-            User user = await FindByEmail(email);
-
-            if (user == null)
-            {
-                return NotFound($"User with email {email} does not exist.");
-            }
-
-            return Ok(_converter.ModelToDto(user));
+            return _converter.ModelToDto(await _service.GetUserByEmailAsync(email));
         }
 
         [HttpPut]
         [Authorize]
-        public async Task<ActionResult> UpdateUserByEmail(string email, UpdateRequest dto)
+        [Route("{id}")]
+        public async Task<ActionResult<UserResponse>> UpdateUserByIdAsync(Guid id, UpdateRequest dto)
         {
-            User user = await FindByEmail(email);
-            UpdateDtoConverter updateConverter = new();
-
-            if (user == null)
-            {
-                return NotFound($"User with email {email} does not exist.");
-            }
-
-            User updatedUser = updateConverter.DtoToModel(dto, user);
-            _context.Entry(user).CurrentValues.SetValues(updatedUser);
-            _context.SaveChanges();
-
-            return Ok(_converter.ModelToDto(updatedUser));
+            return _converter.ModelToDto(await _service.UpdateUserAsync(id, dto));
         }
 
         [HttpDelete]
         [Authorize]
-        public async Task<ActionResult> DeleteUserById(Guid id)
+        [Route("{id}")]
+        public async Task<ActionResult> DeleteUserAsync(Guid id)
         {
-            User user = await _context.Users.FirstOrDefaultAsync(e => e.Id == id);
-
-            if (user == null)
-            {
-                return NotFound($"User with id {id} does not exist.");
-            }
-
-            _context.Remove(user);
-            _context.SaveChanges();
+            await _service.DeleteUserByIdAsync(id);
 
             return Ok();
-        }
-
-        private async Task<User> FindByEmail(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
     }
 }
