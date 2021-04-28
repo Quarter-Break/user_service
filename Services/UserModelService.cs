@@ -50,7 +50,7 @@ namespace UserService.Services
         {
             User user = await _repository.GetByEmailAsync(email);
 
-            if (user != null)
+            if (user == null)
             {
                 throw new Exception($"User with email {email} not found.");
             }
@@ -74,7 +74,7 @@ namespace UserService.Services
         {
             User user = await _repository.GetByIdAsync(id);
 
-            if (user != null)
+            if (user == null)
             {
                 throw new Exception($"User with id {id} not found.");
             }

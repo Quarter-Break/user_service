@@ -43,6 +43,14 @@ namespace UserService.Controllers
 
         [HttpGet]
         [Authorize]
+        [Route("{id}")]
+        public async Task<ActionResult<UserResponse>> GetUserByIdAsync(Guid id)
+        {
+            return _converter.ModelToDto(await _service.GetUserByIdAsync(id));
+        }
+
+        [HttpGet]
+        [Authorize]
         [Route("{email}")]
         public async Task<ActionResult<UserResponse>> GetUserByEmailAsync(string email)
         {
