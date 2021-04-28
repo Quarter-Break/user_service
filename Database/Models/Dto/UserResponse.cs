@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UserService.Database.Models
+namespace UserService.Database.Models.Dto
 {
     public class UserResponse
     {

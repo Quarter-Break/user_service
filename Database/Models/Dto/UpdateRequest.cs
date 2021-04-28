@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-
-namespace UserService.Database.Models.Dto
+﻿namespace UserService.Database.Models.Dto
 {
     public class UpdateRequest
     {

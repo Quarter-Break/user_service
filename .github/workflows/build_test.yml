@@ -27,6 +27,7 @@ jobs:
         with:
             files: 'appsettings.json'
         env:
+            AppSettings.Secret: ${{ secrets.SECRET }}
             ConnectionString: ${{ secrets.DATABASE_CONNECTION }}
           
       - uses: actions/checkout@v2

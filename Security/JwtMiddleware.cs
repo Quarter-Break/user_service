@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UserService.Helpers.Security
+namespace UserService.Security
 {
     // Source: https://github.com/cornflourblue/aspnet-core-3-jwt-authentication-api/
     public class JwtMiddleware
