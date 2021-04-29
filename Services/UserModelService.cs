@@ -1,87 +1,104 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
+using UserService.Database.Contexts;
 using UserService.Database.Converters;
 using UserService.Database.Models.Dto;
 using UserService.Models;
-using UserService.Repositories;
+using UserService.Security;
 
 namespace UserService.Services
 {
-    public class UserModelService : IUserService
+    public class UserModelService : Controller, IUserService
     {
-        private readonly IUserRepository _repository;
+        private readonly UserContext _context;
+        private readonly IAuthenticationService _authenticationService;
         private readonly IDtoConverter<User, UserRequest, UserResponse> _converter;
-        private readonly UpdateDtoConverter _updateDtoConverter;
 
-        public UserModelService(IUserRepository repository, IDtoConverter<User, UserRequest, UserResponse> converter)
+        public UserModelService(UserContext context,
+               IAuthenticationService authenticationService,
+            IDtoConverter<User, UserRequest, UserResponse> converter)
         {
-            _repository = repository;
+            _context = context;
+            _authenticationService = authenticationService;
             _converter = converter;
-            _updateDtoConverter = new();
         }
 
-        public async Task<User> AddUserAsync(UserRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> AddAsync(UserRequest request)
         {
-            User user = await _repository.GetByEmailAsync(request.Email);
+            User user = await _context.Users.FirstOrDefaultAsync(e => e.Email == request.Email);
 
             if (user != null)
             {
-                throw new Exception("This email is already in use.");
+                return BadRequest("This email is already in use.");
             }
 
             User registration = _converter.DtoToModel(request);
+            await _context.AddAsync(registration);
+            AuthenticationRequest authenticationRequest = new AuthenticationRequest(registration);
 
-            return await _repository.AddAsync(registration);
+            return await _authenticationService.AuthenticateAsync(authenticationRequest);
         }
 
-        public async Task<User> DeleteUserByIdAsync(Guid id)
+        public async Task<ActionResult<AuthenticationResponse>> Login(AuthenticationRequest request)
         {
-            User user = await _repository.GetByIdAsync(id);
+            return await _authenticationService.AuthenticateAsync(request);
+        }
+
+        public async Task<ActionResult<UserResponse>> GetByIdAsync(Guid id)
+        {
+            User user = await _context.Users.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (user == null)
+            {
+                return NotFound($"User with id {id} not found.");
+            }
+
+            return _converter.ModelToDto(user);
+        }
+
+        public async Task<ActionResult<UserResponse>> GetByEmailAsync(string email)
+        {
+            User user = await _context.Users.FirstOrDefaultAsync(e => e.Email == email);
+
+            if (user == null)
+            {
+                return NotFound($"User with email {email} not found.");
+            }
+
+            return _converter.ModelToDto(user);
+        }
+
+        public async Task<ActionResult<UserResponse>> UpdateAsync(Guid id, UpdateRequest request)
+        {
+            User user = await _context.Users.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (user == null)
+            {
+                return NotFound($"User with id {id} not found.");
+            }
+
+            user.Id = id;
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+
+            return _converter.ModelToDto(user);
+        }
+
+        public async Task<ActionResult<UserResponse>> DeleteByIdAsync(Guid id)
+        {
+            User user = await _context.Users.FirstOrDefaultAsync(e => e.Id == id);
 
             if (user == null)
             {
                 throw new Exception($"User with id {id} not found.");
             }
 
-            return await _repository.DeleteAsync(await _repository.GetByIdAsync(id));
-        }
+            _context.Remove(user);
+            await _context.SaveChangesAsync();
 
-        public async Task<User> GetUserByEmailAsync(string email)
-        {
-            User user = await _repository.GetByEmailAsync(email);
-
-            if (user == null)
-            {
-                throw new Exception($"User with email {email} not found.");
-            }
-
-            return await _repository.GetByEmailAsync(email);
-        }
-
-        public async Task<User> GetUserByIdAsync(Guid id)
-        {
-            User user = await _repository.GetByIdAsync(id);
-
-            if (user == null)
-            {
-                throw new Exception($"User with id {id} not found.");
-            }
-
-            return user;
-        }
-
-        public async Task<User> UpdateUserAsync(Guid id, UpdateRequest request)
-        {
-            User user = await _repository.GetByIdAsync(id);
-
-            if (user == null)
-            {
-                throw new Exception($"User with id {id} not found.");
-            }
-
-            User updatedUser = _updateDtoConverter.DtoToModel(request, user);
-
-            return await _repository.UpdateAsync(updatedUser);
+            return Ok();
         }
     }
 }

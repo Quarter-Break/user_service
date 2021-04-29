@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-using UserService.Database.Converters;
 using UserService.Database.Models.Dto;
-using UserService.Models;
 using UserService.Security;
 using UserService.Services;
 
@@ -15,23 +13,18 @@ namespace UserService.Controllers
     {
         private readonly IUserService _service;
         private readonly IAuthenticationService _authenticationService;
-        private readonly IDtoConverter<User, UserRequest, UserResponse> _converter;
 
         public UserController(IUserService service,
-            IAuthenticationService authenticationService,
-           IDtoConverter<User, UserRequest, UserResponse> converter)
+            IAuthenticationService authenticationService)
         {
             _service = service;
             _authenticationService = authenticationService;
-            _converter = converter;
         }
 
         [HttpPost]
         public async Task<ActionResult<AuthenticationResponse>> AddAsync(UserRequest request)
         {
-            await _service.AddUserAsync(request);
-
-            return Created("Created", await _authenticationService.AuthenticateAsync(new AuthenticationRequest(request)));
+            return Created("Created", await _service.AddAsync(request));
         }
 
         [HttpPost]
@@ -46,7 +39,7 @@ namespace UserService.Controllers
         [Route("{id}")]
         public async Task<ActionResult<UserResponse>> GetUserByIdAsync(Guid id)
         {
-            return _converter.ModelToDto(await _service.GetUserByIdAsync(id));
+            return await _service.GetByIdAsync(id);
         }
 
         [HttpGet]
@@ -54,25 +47,23 @@ namespace UserService.Controllers
         [Route("email/{email}")]
         public async Task<ActionResult<UserResponse>> GetUserByEmailAsync(string email)
         {
-            return _converter.ModelToDto(await _service.GetUserByEmailAsync(email));
+            return await _service.GetByEmailAsync(email);
         }
 
         [HttpPut]
         [Authorize]
         [Route("{id}")]
-        public async Task<ActionResult<UserResponse>> UpdateUserByIdAsync(Guid id, UpdateRequest dto)
+        public async Task<ActionResult<UserResponse>> UpdateUserByIdAsync(Guid id, UpdateRequest request)
         {
-            return _converter.ModelToDto(await _service.UpdateUserAsync(id, dto));
+            return await _service.UpdateAsync(id, request);
         }
 
         [HttpDelete]
         [Authorize]
         [Route("{id}")]
-        public async Task<ActionResult> DeleteUserAsync(Guid id)
+        public async Task<ActionResult<UserResponse>> DeleteUserAsync(Guid id)
         {
-            await _service.DeleteUserByIdAsync(id);
-
-            return Ok();
+            return await _service.DeleteByIdAsync(id);
         }
     }
 }
