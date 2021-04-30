@@ -36,9 +36,9 @@ namespace UserService.Services
 
             User registration = _converter.DtoToModel(request);
             await _context.AddAsync(registration);
-            AuthenticationRequest authenticationRequest = new AuthenticationRequest(registration);
+            await _context.SaveChangesAsync();
 
-            return await _authenticationService.AuthenticateAsync(authenticationRequest);
+            return await _authenticationService.AuthenticateAsync(new AuthenticationRequest(request));
         }
 
         public async Task<ActionResult<AuthenticationResponse>> Login(AuthenticationRequest request)

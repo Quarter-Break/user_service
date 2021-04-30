@@ -24,7 +24,7 @@ namespace UserService.Controllers
         [HttpPost]
         public async Task<ActionResult<AuthenticationResponse>> AddAsync(UserRequest request)
         {
-            return Created("Created", await _service.AddAsync(request));
+            return await _service.AddAsync(request);
         }
 
         [HttpPost]
