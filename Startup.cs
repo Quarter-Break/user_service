@@ -8,7 +8,6 @@ using UserService.Database.Contexts;
 using UserService.Database.Converters;
 using UserService.Database.Models.Dto;
 using UserService.Models;
-using UserService.Repositories;
 using UserService.Security;
 using UserService.Services;
 
@@ -63,10 +62,6 @@ namespace UserService
 
             // Inject converters.
             services.AddScoped<IDtoConverter<User, UserRequest, UserResponse>, UserDtoConverter>();
-
-            // Inject repositories.
-            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
-            services.AddTransient<IUserRepository, UserRepository>();
 
             // Inject services.
             services.AddTransient<IUserService, UserModelService>();
