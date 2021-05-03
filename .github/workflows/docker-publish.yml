@@ -6,7 +6,18 @@ jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet: [ '5.0.x' ]
     steps:
+      - name: Variable substitution
+      - uses: microsoft/variable-substitution@v1 
+        with:
+            files: 'appsettings.json'
+        env:
+            AppSettings.Secret: ${{ secrets.SECRET }}
+            ConnectionString: ${{ secrets.DATABASE_CONNECTION }}
+            
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Push to Docker Hub
