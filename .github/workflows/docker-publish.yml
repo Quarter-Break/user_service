@@ -1,5 +1,7 @@
 name: Publish Docker image
 on:
+  push:
+    branches: [ main ]
   release:
     types: [published]
 jobs:
@@ -7,6 +9,13 @@ jobs:
     name: Push Docker image to Docker Hub
     runs-on: ubuntu-latest
     steps:
+      - uses: microsoft/variable-substitution@v1 
+        with:
+            files: 'appsettings.json'
+        env:
+            AppSettings.Secret: ${{ secrets.SECRET }}
+            ConnectionString: ${{ secrets.DATABASE_CONNECTION }}
+            
       - name: Check out the repo
         uses: actions/checkout@v2
       - name: Push to Docker Hub
