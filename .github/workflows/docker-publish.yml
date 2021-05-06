@@ -20,6 +20,7 @@ jobs:
             files: 'appsettings.json'
         env:
             AppSettings.Secret: ${{ secrets.SECRET }}
+            AppSettings.CorsPolicy: ${{ secrets.CORS_POLICY }}
             ConnectionString: ${{ secrets.DATABASE_CONNECTION }}
             
       - name: Check out the repo
