@@ -1,5 +1,6 @@
-# Track Service
+# User Service
 [![Build .NET API](https://github.com/Quarter-Break/user_service/actions/workflows/build_test.yml/badge.svg)](https://github.com/Quarter-Break/user_service/actions/workflows/build_test.yml)
+[![Deploy .NET API](https://github.com/Quarter-Break/user_service/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Quarter-Break/user_service/actions/workflows/docker-publish.yml)
 
 .NET Core 5.0 service for authentication and authorization.
 
