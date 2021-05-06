@@ -41,7 +41,7 @@ namespace UserService
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                       builder =>
                       {
-                          builder.WithOrigins(origin) // Only allow API gateway to call service.
+                          builder.WithOrigins("*") // Only allow API gateway to call service.
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowAnyOrigin();
