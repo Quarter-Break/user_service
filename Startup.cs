@@ -1,9 +1,12 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using UserService.Database.Configurations;
 using UserService.Database.Contexts;
 using UserService.Database.Converters;
 using UserService.Database.Models.Dto;
@@ -35,13 +38,13 @@ namespace UserService
             services.AddDbContext<UserContext>(
                 options => options.UseSqlServer(connection));
 
-            var origin = Configuration.GetValue<string>("CorsPolicy");
+            var origin = Configuration.GetValue<string>("AppSettings:CorsPolicy");
             services.AddCors(options =>
             {
                 options.AddPolicy(name: MyAllowSpecificOrigins,
                       builder =>
                       {
-                          builder.WithOrigins("*") // Only allow API gateway to call service.
+                          builder.WithOrigins(origin)
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowAnyOrigin();
@@ -50,7 +53,8 @@ namespace UserService
 
             // Json settings.
             services.AddMvc().AddNewtonsoftJson(options =>
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore)
+                .AddFluentValidation();
 
             // Configure strongly typed settings object.
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
@@ -66,6 +70,9 @@ namespace UserService
 
             // Inject services.
             services.AddTransient<IUserService, UserModelService>();
+
+            // Inject validators.
+            services.AddTransient<IValidator<UserRequest>, UserValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

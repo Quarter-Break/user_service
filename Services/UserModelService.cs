@@ -27,6 +27,11 @@ namespace UserService.Services
 
         public async Task<ActionResult<AuthenticationResponse>> AddAsync(UserRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState.ValidationState);
+            }
+
             User user = await _context.Users.FirstOrDefaultAsync(e => e.Email == request.Email);
 
             if (user != null)
