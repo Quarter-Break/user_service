@@ -37,3 +37,5 @@ Testing with Moq: https://softchris.github.io/pages/dotnet-moq.html#instruct-our
 Authentication/authorization: https://github.com/cornflourblue/aspnet-core-3-jwt-authentication-api/
 
 Variant generic interfaces: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces
+
+RabbitMQ implementation: https://www.programmingwithwolfgang.com/rabbitmq-in-an-asp-net-core-3-1-microservice/#implement-rabbitmq-with-net-core

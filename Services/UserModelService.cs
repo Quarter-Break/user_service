@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UserService.Database.Contexts;
 using UserService.Database.Converters;
 using UserService.Database.Models.Dto;
+using UserService.Messaging;
 using UserService.Models;
 using UserService.Security;
 
@@ -15,14 +16,17 @@ namespace UserService.Services
         private readonly UserContext _context;
         private readonly IAuthenticationService _authenticationService;
         private readonly IDtoConverter<User, UserRequest, UserResponse> _converter;
+        private readonly IUserUpdateSender _userUpdateSender;
 
         public UserModelService(UserContext context,
                IAuthenticationService authenticationService,
-            IDtoConverter<User, UserRequest, UserResponse> converter)
+            IDtoConverter<User, UserRequest, UserResponse> converter,
+            IUserUpdateSender userUpdateSender)
         {
             _context = context;
             _authenticationService = authenticationService;
             _converter = converter;
+            _userUpdateSender = userUpdateSender;
         }
 
         public async Task<ActionResult<AuthenticationResponse>> AddAsync(UserRequest request)
@@ -88,7 +92,11 @@ namespace UserService.Services
             _context.Update(user);
             await _context.SaveChangesAsync();
 
-            return _converter.ModelToDto(user);
+            // Send updated user over message bus.
+            UserResponse response = _converter.ModelToDto(user);
+            _userUpdateSender.SendUser(response);
+
+            return response;
         }
 
         public async Task<ActionResult<UserResponse>> DeleteByIdAsync(Guid id)
