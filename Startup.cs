@@ -10,6 +10,8 @@ using UserService.Database.Configurations;
 using UserService.Database.Contexts;
 using UserService.Database.Converters;
 using UserService.Database.Models.Dto;
+using UserService.Messaging;
+using UserService.Messaging.Options;
 using UserService.Models;
 using UserService.Security;
 using UserService.Services;
@@ -73,6 +75,10 @@ namespace UserService
 
             // Inject validators.
             services.AddTransient<IValidator<UserRequest>, UserValidator>();
+
+            // Inject RabbitMQ.
+            services.Configure<RabbitMqConfiguration>(Configuration.GetSection("RabbitMq"));
+            services.AddTransient<IUserUpdateSender, UserUpdateSender>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
