@@ -20,6 +20,11 @@ dotnet run
 docker-compose up --build
 ```
 
+## Run RabbitMQ
+```
+docker run --network qbreak-network -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+
 #### Error: Docker Network Missing
 If you get the following error:
 Network `qbreak-network` declared as external, but could not be found. Run the following:
@@ -37,3 +42,5 @@ Testing with Moq: https://softchris.github.io/pages/dotnet-moq.html#instruct-our
 Authentication/authorization: https://github.com/cornflourblue/aspnet-core-3-jwt-authentication-api/
 
 Variant generic interfaces: https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/covariance-contravariance/creating-variant-generic-interfaces
+
+RabbitMQ implementation: https://www.programmingwithwolfgang.com/rabbitmq-in-an-asp-net-core-3-1-microservice/#implement-rabbitmq-with-net-core
