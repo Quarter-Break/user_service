@@ -47,6 +47,10 @@ namespace UserService.Services
             await _context.AddAsync(registration);
             await _context.SaveChangesAsync();
 
+            // Send new user over message bus.
+            UserResponse response = _converter.ModelToDto(registration);
+            _userUpdateSender.SendUser(response);
+
             return await _authenticationService.AuthenticateAsync(new AuthenticationRequest(request));
         }
 

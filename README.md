@@ -20,6 +20,11 @@ dotnet run
 docker-compose up --build
 ```
 
+## Run RabbitMQ
+```
+docker run --network qbreak-network -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+```
+
 #### Error: Docker Network Missing
 If you get the following error:
 Network `qbreak-network` declared as external, but could not be found. Run the following:
