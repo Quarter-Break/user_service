@@ -77,8 +77,11 @@ namespace UserService
             services.AddTransient<IValidator<UserRequest>, UserValidator>();
 
             // Inject RabbitMQ.
-            services.Configure<RabbitMqConfiguration>(Configuration.GetSection("RabbitMq"));
-            services.AddTransient<IUserUpdateSender, UserUpdateSender>();
+            if (Configuration.GetValue<bool>("RabbitMq:Enabled"))
+            {
+                services.Configure<RabbitMqConfiguration>(Configuration.GetSection("RabbitMq"));
+                services.AddTransient<IUserUpdateSender, UserUpdateSender>();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
